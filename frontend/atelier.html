@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1017">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Nym · Ateliê</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+  <nav id="rail"></nav>
+  <main class="page">
+    <h1>Ateliê</h1>
+    <p class="kind">O que o Nym faz por conta própria: desenhos, textos, brinquedos interativos e programas, as melhorias que ele propõe para o próprio código e as lições que ele tirou da experiência. Suas reações (👍/👎) entram no que ele aprende e no que ele decide criar depois.</p>
+    <p id="error" class="msgline" role="alert"></p>
+
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="gallery" aria-selected="true">Criações</button>
+      <button role="tab" data-tab="proposals" aria-selected="false">Melhorias de código <span id="n-proposals" class="badge" hidden></span></button>
+      <button role="tab" data-tab="lessons" aria-selected="false">Aprendizados</button>
+    </div>
+
+    <section id="tab-gallery">
+      <div class="filters">
+        <button class="ghost" data-kind="" aria-pressed="true">Tudo</button>
+        <button class="ghost" data-kind="drawing" aria-pressed="false">Desenhos</button>
+        <button class="ghost" data-kind="text" aria-pressed="false">Textos</button>
+        <button class="ghost" data-kind="toy" aria-pressed="false">Brinquedos</button>
+        <button class="ghost" data-kind="code" aria-pressed="false">Códigos</button>
+      </div>
+      <div id="gallery" class="gallery"></div>
+    </section>
+
+    <section id="tab-proposals" hidden>
+      <p class="kind">Ele lê o próprio código e propõe trocas pequenas. Nada é aplicado sem você: confira o diff, aplique e reinicie o Nym. Arquivos de segurança, permissões, rede, banco e API são protegidos. Toda aplicação guarda uma cópia para desfazer.</p>
+      <div id="proposals"></div>
+    </section>
+
+    <section id="tab-lessons" hidden>
+      <p class="kind">Lições que ele tirou do que deu certo e errado. Elas entram quando ele planeja algo parecido (tarefas) ou conversa com você (conversa). O placar é real: ganha ponto quando o objetivo que usou a lição deu certo ou quando você curte a resposta; perde no contrário. Lição que falha mais do que ajuda é aposentada sozinha.</p>
+      <h2>Ao fazer tarefas</h2>
+      <div id="lessons-task"></div>
+      <h2>Ao conversar com você</h2>
+      <div id="lessons-chat"></div>
+    </section>
+  </main>
+  </div>
+
+  <dialog id="viewer" class="viewer">
+    <div class="viewer-head">
+      <div><b id="v-title"></b> <span id="v-meta" class="kind"></span></div>
+      <button id="v-close" type="button" class="ghost" aria-label="Fechar">✕</button>
+    </div>
+    <p id="v-about" class="kind prose"></p>
+    <div id="v-body" class="viewer-body"></div>
+    <div class="row-inline">
+      <button id="v-up" type="button">👍 Curti</button>
+      <button id="v-down" type="button">👎 Não curti</button>
+      <input id="v-comment" maxlength="300" placeholder="Comentário para ele (opcional)" class="grow">
+      <span id="v-versions" class="kind"></span>
+      <button id="v-archive" type="button" class="danger">Arquivar</button>
+    </div>
+  </dialog>
+  <script src="shell.js"></script>
+  <script src="atelier.js"></script>
+</body>
+</html>

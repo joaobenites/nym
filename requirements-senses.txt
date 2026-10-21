@@ -1,0 +1,4 @@
+# Opcional (Fase 8 — sentidos): para o Nym ouvir vídeos do YouTube pelas legendas e baixar quadros.
+# Instale com: .venv\Scripts\python.exe -m pip install -r requirements-senses.txt
+# O ffmpeg é um programa à parte: winget install Gyan.FFmpeg
+yt-dlp

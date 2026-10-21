@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1017">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Nym · Conectar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="login">
+  <main class="login-card">
+    <img src="icon.svg" alt="" class="login-pet" width="96" height="96">
+    <h1>Conectar ao Nym</h1>
+    <p class="kind prose">No computador do Nym, clique em <b>📱 Celular</b> → <b>Gerar código</b> e digite aqui.</p>
+    <form id="pair" class="login-form">
+      <label for="code">Código</label>
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="7" required placeholder="000 000">
+      <label for="name">Nome deste aparelho</label>
+      <input id="name" maxlength="60" placeholder="Celular">
+      <button class="primary" type="submit">Conectar</button>
+      <p id="msg" class="msgline" role="alert"></p>
+    </form>
+  </main>
+  <script src="login.js"></script>
+</body>
+</html>

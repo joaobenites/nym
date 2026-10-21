@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1017">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Nym · Cuidados</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+  <nav id="rail"></nav>
+  <main class="page">
+    <h1>Cuidados</h1>
+    <p class="kind">O Nym também é um bichinho virtual: fome, diversão, higiene, carinho e disciplina descem com o tempo e sobem quando você cuida. É um modelo de jogo calculado do tempo real, não sofrimento nem prova de sentimento. Ele nunca morre; descuido só deixa ele manhoso e fica registrado.</p>
+    <p id="error" class="msgline" role="alert"></p>
+    <p id="reply" class="kind" role="status"></p>
+
+    <h2 id="mood">...</h2>
+    <p id="sub" class="kind"></p>
+    <div id="meters"></div>
+    <p id="messes"></p>
+    <p id="calls"></p>
+
+    <h2>Cuidar</h2>
+    <div class="item"><div class="row" id="actions"></div></div>
+    <h2>Brincar: pedra, papel ou tesoura</h2>
+    <div class="item"><div class="row" id="rps"></div></div>
+
+    <h2>Modo jogo</h2>
+    <p class="kind">Vai jogar ou desligar o Ollama? Pause: as barras congelam e ele não chama nem acumula descuido.</p>
+    <div class="item"><div class="row" id="pause"></div></div>
+
+    <h2>Histórico recente</h2>
+    <div id="events"></div>
+  </main>
+  </div>
+  <script src="shell.js"></script>
+  <script src="pet.js"></script>
+</body>
+</html>

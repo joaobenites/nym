@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1017">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Nym · Vida</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+  <nav id="rail"></nav>
+  <main class="page">
+    <h1>Vida do Nym</h1>
+    <p class="kind">Tudo aqui vem de registros e processos reais. Nada disso prova consciência: são mecanismos que dão continuidade e iniciativa ao Nym.</p>
+    <p id="error" class="msgline" role="alert"></p>
+
+    <h2>Estado interno</h2>
+    <p id="state-note" class="kind"></p>
+    <div id="state"></div>
+
+    <h2>Hoje até agora</h2>
+    <p class="kind">O dia dele, montado dos registros (nada aqui é escrito pelo modelo). Amanhã cedo vira uma página do diário.</p>
+    <div id="today"></div>
+
+    <h2>Diário</h2>
+    <p class="kind">Uma página por dia, escrita por ele a partir do que aconteceu de verdade. A última linha é o que ele quer fazer no dia seguinte: vira ponto de partida das vontades dele.</p>
+    <div id="diary"></div>
+
+    <h2>Projetos dele</h2>
+    <p class="kind">Coisas que duram dias, feitas de vários objetivos em sequência. Ele abre e fecha; você pode largar um se quiser.</p>
+    <div id="projects"></div>
+
+    <h2>Sentidos</h2>
+    <p class="kind">O que ele consegue perceber agora e tudo o que ele já viu ou assistiu (o que fica guardado é a descrição; a imagem só se você ligar NYM_KEEP_IMAGES). Apagar aqui faz ele esquecer de verdade.</p>
+    <div id="senses"></div>
+    <div id="perceptions"></div>
+
+    <h2>Presença (quando o Nym puxa assunto)</h2>
+    <p class="kind">Ele chama quando tem um motivo real (tarefa pronta, pedido de permissão, algo de um sonho, você voltou). Cada motivo é dito uma vez só. Limites são opcionais (0 = sem limite); o horário de silêncio continua valendo.</p>
+    <form id="presence" class="item">
+      <div class="field"><label for="p-enabled">Pode puxar assunto</label><input id="p-enabled" type="checkbox"></div>
+      <div class="field"><label for="p-qs">Silêncio de</label><input id="p-qs" type="text" value="23:00"> até <input id="p-qe" type="text" value="08:00"></div>
+      <div class="field"><label for="p-max">Máximo por dia (0 = sem limite)</label><input id="p-max" type="number" min="0" max="50"></div>
+      <div class="field"><label for="p-gap">Intervalo mínimo (min, 0 = nenhum)</label><input id="p-gap" type="number" min="0" max="1440"></div>
+      <div class="field"><label for="p-wb">"Voltou" após (horas)</label><input id="p-wb" type="number" min="1" max="168"></div>
+      <div class="row"><button type="submit">Salvar</button></div>
+    </form>
+
+    <h2>Gostos e prioridades</h2>
+    <p id="taste-note" class="kind"></p>
+    <p class="kind">Calculados do que o Nym pesquisou, criou, sonhou e conversou com você (com o tempo, o que não é alimentado esmaece). Se algum não for dele, vete: ele nunca mais é formado.</p>
+    <div id="tastes"></div>
+
+    <h2>Sonhos (Somnium)</h2>
+    <p id="dream-status" class="kind"></p>
+    <div class="row-inline">
+      <button id="dream-run" type="button">Sonhar agora</button>
+      <button id="dream-cancel" type="button">Cancelar</button>
+      <button id="dream-pause" type="button">Pausar sonhos</button>
+      <span id="dream-result" class="kind"></span>
+    </div>
+    <div id="cycles"></div>
+
+    <h2>Perguntas em aberto</h2>
+    <div id="questions"></div>
+
+    <h2>Tarefas de exploração</h2>
+    <p class="kind">Com a autonomia ligada (página <a href="tasks.html">Tarefas</a>), ele mesmo decide investigar as que couberem; você também pode aprovar ou dispensar. Aprovada, vira um objetivo e ele investiga com as ferramentas dele, inclusive pesquisa na internet.</p>
+    <div id="exploration"></div>
+  </main>
+  </div>
+  <script src="shell.js"></script>
+  <script src="life.js"></script>
+</body>
+</html>

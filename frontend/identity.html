@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1017">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Nym · Identidade</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+  <nav id="rail"></nav>
+  <main class="page">
+    <h1>Identidade</h1>
+    <p class="kind">Tudo aqui é lido do banco de dados. O nome e as regras operacionais são fixos.</p>
+    <p id="error" class="msgline" role="alert"></p>
+
+    <h2>Propostas pendentes</h2>
+    <div id="pending"></div>
+
+    <h2>Identidade atual</h2>
+    <div id="entries"></div>
+    <form id="add-entry" class="add">
+      <select id="add-kind" aria-label="Tipo"></select>
+      <input id="add-value" placeholder="Novo valor" maxlength="1000" required>
+      <button type="submit">Adicionar</button>
+    </form>
+
+    <h2>Objetivos</h2>
+    <div id="goals"></div>
+    <form id="add-goal" class="add">
+      <input id="goal-text" placeholder="Novo objetivo" maxlength="500" required>
+      <select id="goal-priority" aria-label="Prioridade">
+        <option value="1">prioridade 1 (alta)</option><option value="2">2</option>
+        <option value="3" selected>3</option><option value="4">4</option><option value="5">5 (baixa)</option>
+      </select>
+      <button type="submit">Adicionar</button>
+    </form>
+
+    <h2>Histórico de mudanças</h2>
+    <div id="history"></div>
+  </main>
+  </div>
+  <script src="shell.js"></script>
+  <script src="identity.js"></script>
+</body>
+</html>

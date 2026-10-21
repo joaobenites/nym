@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1017">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Nym · Tarefas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+  <nav id="rail"></nav>
+  <main class="page">
+    <h1>Tarefas</h1>
+    <p class="kind">Objetivos que o Nym executa sozinho, em segundo plano, com as ferramentas dele. Tudo aqui vem do banco: cada passo, resultado e falha fica registrado.</p>
+    <p id="error" class="msgline" role="alert"></p>
+
+    <h2>Pedindo sua permissão</h2>
+    <div id="waiting"></div>
+
+    <h2>Vontades do Nym</h2>
+    <p class="kind">Depois de cada sonho, ou de tempos em tempos quando há algo novo, ele olha para os próprios sonhos, perguntas em aberto, interesses e lembranças e pode criar objetivos seus. Cada um guarda o motivo e os registros que o sustentam. O "querer" é texto do modelo a partir desses registros, guardado como motivo; as ferramentas e permissões continuam valendo.</p>
+    <form id="autonomy" class="item">
+      <div class="field"><label for="a-enabled">Pode criar objetivos próprios</label><input id="a-enabled" type="checkbox"></div>
+      <div class="field"><label for="a-auto">Começa sem pedir seu ok</label><input id="a-auto" type="checkbox"></div>
+      <div class="field"><label for="a-active">Dele, ao mesmo tempo (máx.)</label><input id="a-active" type="number" min="1" max="10"></div>
+      <div class="field"><label for="a-day">Novos por dia (0 = sem limite)</label><input id="a-day" type="number" min="0" max="50"></div>
+      <div class="field"><label for="a-interval">Pensar a cada (horas, sem sonho novo)</label><input id="a-interval" type="number" min="1" max="72"></div>
+      <div class="field"><label for="a-free">Tempo livre: decide algo sozinho a cada (min, 0 = não)</label><input id="a-free" type="number" min="0" max="1440"></div>
+      <div class="field"><label for="a-retries">Quando trava, recomeça sozinho até (vezes)</label><input id="a-retries" type="number" min="0" max="5"></div>
+      <div class="row"><button type="submit">Salvar</button></div>
+    </form>
+    <div id="desire-runs"></div>
+
+    <h2>Novo objetivo</h2>
+    <form id="new-goal" class="item">
+      <div class="field"><label for="g-desc">O que ele deve fazer</label><input id="g-desc" class="wide" maxlength="500" required placeholder="Ex.: anotar as ideias de vídeo que eu já te contei"></div>
+      <div class="field"><label for="g-crit">Como saber que terminou</label><input id="g-crit" class="wide" maxlength="500" placeholder="opcional"></div>
+      <div class="field"><label for="g-prio">Prioridade (1 = mais alta)</label><input id="g-prio" type="number" min="1" max="5" value="3"></div>
+      <div class="field"><label for="g-deadline">Prazo</label><input id="g-deadline" type="datetime-local"></div>
+      <div class="row"><button type="submit">Criar</button></div>
+    </form>
+
+    <h2>Objetivos</h2>
+    <div class="row-inline">
+      <button id="pause" type="button">Pausar tudo</button>
+      <span id="pause-state" class="kind"></span>
+    </div>
+    <div id="goals"></div>
+
+    <h2>Pastas que ele pode ler</h2>
+    <p class="kind">Só leitura e só arquivos de texto. Ele nunca sai da pasta que você autorizar. Remover vale na hora.</p>
+    <div id="folders"></div>
+    <form id="add-folder" class="add">
+      <input id="folder-path" placeholder="Caminho completo, ex.: C:\Users\Home\Documents\ideias" maxlength="1000" required>
+      <input id="folder-label" placeholder="Nome curto (opcional)" maxlength="60" style="max-width:14rem">
+      <button type="submit">Autorizar</button>
+    </form>
+
+    <h2>Pesquisas recentes</h2>
+    <p class="kind">Cada busca e página lida, com a fonte e a data. O que ele guarda de uma pesquisa vira lembrança "de fonte externa", nunca fato confirmado.</p>
+    <div id="research"></div>
+
+    <h2>Ferramentas e permissões</h2>
+    <div class="item"><div class="row-inline"><span class="grow">Para ele não depender de você a cada passo: deixe tudo de risco médio (internet, notas, vídeos) rodar sem perguntar. Risco alto continua travado.</span><button id="trust" class="primary" type="button">Confiar no risco médio</button></div></div>
+    <p class="kind">Automático: roda sem perguntar. Perguntar: ele pede sua permissão a cada uso. Negado: nunca roda. Risco alto nunca é automático. Mudanças valem na hora, até para tarefas já na fila.</p>
+    <div id="tools"></div>
+  </main>
+  </div>
+  <script src="shell.js"></script>
+  <script src="tasks.js"></script>
+</body>
+</html>

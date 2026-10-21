@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1017">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Nym · Memória</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+  <nav id="rail"></nav>
+  <main class="page">
+    <h1>Memória</h1>
+    <p class="kind">Tudo aqui vem do banco. Você pode corrigir, arquivar ou apagar qualquer lembrança.</p>
+    <p id="error" class="msgline" role="alert"></p>
+
+    <h2>Consolidação</h2>
+    <p class="kind">O Nym transforma a conversa em lembranças em segundo plano, quando você fica um tempo sem falar. Para testar agora:</p>
+    <div class="row-inline">
+      <button id="consolidate" type="button">Consolidar agora</button>
+      <span id="consolidate-result" class="kind"></span>
+    </div>
+    <div id="jobs"></div>
+
+    <h2>Lembranças</h2>
+    <form id="filters" class="add">
+      <select id="f-kind" aria-label="Tipo">
+        <option value="">todos os tipos</option><option value="episodic">episódios</option>
+        <option value="semantic">fatos</option><option value="identity">observações</option>
+      </select>
+      <select id="f-epistemic" aria-label="Certeza">
+        <option value="">toda certeza</option><option value="confirmed">confirmado</option>
+        <option value="hypothesis">hipótese</option><option value="unverified">não verificado</option>
+        <option value="sourced">de fonte externa</option>
+      </select>
+      <select id="f-status" aria-label="Estado">
+        <option value="active">ativas</option><option value="archived">arquivadas</option>
+        <option value="superseded">substituídas</option><option value="all">todas</option>
+      </select>
+      <input id="f-q" placeholder="Buscar por palavras">
+      <button type="submit">Filtrar</button>
+    </form>
+    <div id="list"></div>
+
+    <h2>Adicionar lembrança</h2>
+    <form id="add" class="add">
+      <input id="add-content" placeholder="Algo que o Nym deve saber" maxlength="1000" required>
+      <button type="submit">Adicionar</button>
+    </form>
+
+    <h2>Testar recuperação</h2>
+    <p class="kind">Mostra o que o Nym lembraria ao ouvir uma frase, com a nota de cada componente.</p>
+    <form id="probe" class="add">
+      <input id="probe-q" placeholder="Ex.: como está meu gato?" required>
+      <button type="submit">Testar</button>
+    </form>
+    <div id="probe-result"></div>
+  </main>
+  </div>
+  <script src="shell.js"></script>
+  <script src="memory.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1017">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Nym</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <nav id="rail"></nav>
+    <div class="chat-layout">
+      <main class="chat">
+        <header class="chat-head">
+          <button id="toggle-panel" class="who" type="button" aria-controls="panel" aria-expanded="false" title="Ver o Nym agora">
+            <span id="mini-pet" class="mini-pet" aria-hidden="true"></span>
+            <span class="who-text">
+              <b>Nym</b>
+              <span id="mood-line" class="sub" aria-live="polite" title="Estado calculado de dados reais; não é sentimento."></span>
+            </span>
+          </button>
+        </header>
+        <div id="log" class="log" role="log" aria-live="polite"></div>
+        <div id="tray" class="tray" hidden aria-label="Imagens para mostrar a ele"></div>
+        <form id="composer" class="composer">
+          <button id="sense-more" type="button" class="ghost sense more" aria-expanded="false" aria-controls="senses" title="Mostrar algo para ele">＋</button>
+          <div id="senses" class="senses" role="group" aria-label="Mostrar algo para ele">
+            <button id="sense-image" type="button" class="ghost sense" title="Mostrar uma imagem (ou cole/arraste aqui)" aria-label="Mostrar uma imagem">🖼</button>
+            <button id="sense-camera" type="button" class="ghost sense" title="Mostrar pela câmera (só quando você clica)" aria-label="Mostrar pela câmera">📷</button>
+            <button id="sense-screen" type="button" class="ghost sense" title="Mostrar a sua tela (um quadro, só quando você clica)" aria-label="Mostrar a tela">🖥</button>
+            <input id="sense-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+          </div>
+          <label for="input" class="hint">Mensagem para o Nym</label>
+          <textarea id="input" rows="1" placeholder="Fale com o Nym" title="Enter envia · Shift+Enter quebra linha" maxlength="8000" autofocus></textarea>
+          <button id="send" class="primary" type="submit">Enviar</button>
+          <button id="stop" class="danger" type="button" hidden>Parar</button>
+        </form>
+      </main>
+
+      <div id="backdrop" class="backdrop" hidden></div>
+      <aside id="panel" class="panel" aria-label="O que o Nym está fazendo agora">
+        <button id="close-panel" class="ghost close-panel" type="button" aria-label="Fechar">✕</button>
+        <section class="card pet-card">
+          <div id="pet" role="img" aria-label="Avatar do Nym"></div>
+          <div class="pet-info">
+            <b id="pet-stage">…</b>
+            <span id="pet-mode" class="kind"></span>
+            <div class="bar" id="pet-bar" title=""><span></span></div>
+            <span id="pet-next" class="kind"></span>
+            <button id="notify" class="ghost small" type="button" hidden>Avisar quando ele chamar</button>
+          </div>
+        </section>
+        <section id="permissions"></section>
+        <section class="card">
+          <h2>Agora</h2>
+          <div id="mood"></div>
+        </section>
+        <section class="card">
+          <h2>Fazendo</h2>
+          <div id="doing"></div>
+        </section>
+        <section class="card">
+          <h2>Pedir para ele fazer</h2>
+          <form id="quick" class="quick">
+            <textarea id="quick-text" maxlength="500" placeholder="Ex.: pesquisar editores de vídeo gratuitos e anotar os melhores"></textarea>
+            <button class="primary" type="submit">Pedir</button>
+          </form>
+        </section>
+        <section class="card">
+          <h2>Último sonho</h2>
+          <div id="dream"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+  <dialog id="camera" class="viewer camera-dialog">
+    <div class="viewer-head"><b>Câmera</b><button id="cam-close" type="button" class="ghost" aria-label="Fechar">✕</button></div>
+    <video id="cam-video" autoplay playsinline muted></video>
+    <p class="kind prose">Só uma foto é enviada, quando você clicar. A câmera desliga logo depois.</p>
+    <div class="row-inline"><button id="cam-shot" type="button" class="primary">Mostrar para ele</button></div>
+  </dialog>
+  <script src="shell.js"></script>
+  <script src="senses.js"></script>
+  <script src="avatar.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

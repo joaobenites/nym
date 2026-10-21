@@ -1,0 +1,10 @@
+[project]
+name = "nym"
+version = "0.1.0"
+description = "Nym: entidade digital pessoal, local-first, com identidade e memória persistentes."
+requires-python = ">=3.11"
+dependencies = ["fastapi>=0.110", "uvicorn>=0.29"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

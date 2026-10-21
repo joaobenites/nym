@@ -1,0 +1,20 @@
+# Dados pessoais e segredos: nunca versionar
+data/
+.env
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.venv-train/
+.pytest_cache/
+*.egg-info/
+
+# Ferramentas e saídas locais (grandes ou pessoais)
+llama.cpp-master/
+llama-bin/
+unsloth_compiled_cache/
+Claude outputs/
