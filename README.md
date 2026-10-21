@@ -1,63 +1,64 @@
 # Nym
 
-Um companheiro digital pessoal que vive no seu computador, no espírito de Digimon e MegaMan Battle Network.
-A ideia é um **amigo virtual**, não um chatbot: ele tem identidade e memória próprias, sonha, cria objetivos,
-pesquisa sozinho e precisa de cuidados como um vpet.
+A personal digital companion that lives on your computer, in the spirit of Digimon and MegaMan Battle Network.
+The goal is a **virtual friend**, not a chatbot: it has its own identity and memory, dreams, sets its own goals,
+researches on its own and needs care like a virtual pet.
 
-Tudo roda localmente (Windows + [Ollama](https://ollama.com)), e os dados ficam num SQLite na sua máquina.
+Everything runs locally (Windows + [Ollama](https://ollama.com)), and the data lives in a SQLite database on your machine.
 
-> Projeto pessoal em desenvolvimento ativo. A maior parte das funções foi testada com modelo simulado; a validação
-> com o modelo real ainda está em andamento. O estado de cada parte está em [docs/MANUAL.md](docs/MANUAL.md).
+> Personal project under active development. Most features were tested with a simulated model; validation with the
+> real model is still in progress. Nym itself speaks Brazilian Portuguese, and the detailed docs are in Portuguese:
+> [docs/MANUAL.md](docs/MANUAL.md).
 
-## O que ele faz
+## What it does
 
-- **Conversa como amigo**: um chat único e contínuo, mensagens curtas, com noção do tempo entre uma conversa e outra.
-- **Identidade persistente**: quem ele é fica no banco, independente do modelo. Mudanças que ele propõe só valem com o seu ok.
-- **Memória**: o modelo propõe o que lembrar, o código decide. Toda lembrança aponta para a mensagem que a sustenta.
-- **Somnium (sonhos)**: quando está ocioso, revisa o dia, associa ideias e forma hipóteses, sempre marcadas como hipóteses.
-- **Objetivos e autonomia**: planeja tarefas em passos, usa ferramentas com permissões e cria vontades próprias a partir do que viveu.
-- **Internet e pastas**: pesquisa na web com fontes e lê, só para leitura, as pastas que você autorizar.
-- **Sentidos**: vê imagens, a câmera ou a tela (só quando você clica) e assiste vídeos do YouTube.
-- **Ateliê**: cria desenhos SVG e pequenos brinquedos HTML, sempre em sandbox.
-- **Vpet**: fome, diversão, higiene, carinho e sono calculados do tempo real, com evolução em estágios.
-- **Celular**: acesso pela rede local com pareamento por código.
+- **Talks like a friend**: one single, continuous chat, short messages, aware of the time between conversations.
+- **Persistent identity**: who it is lives in the database, independent of the model. Changes it proposes only apply with your approval.
+- **Memory**: the model proposes what to remember, the code decides. Every memory points to the message that backs it.
+- **Somnium (dreams)**: when idle, it reviews the day, connects ideas and forms hypotheses, always labeled as hypotheses.
+- **Goals and autonomy**: plans tasks in steps, uses tools under permissions and creates its own wishes from what it has lived.
+- **Web and folders**: searches the web with sources and reads, read-only, the folders you authorize.
+- **Senses**: sees images, the camera or the screen (only when you click) and watches YouTube videos.
+- **Atelier**: creates SVG drawings and small HTML toys, always sandboxed.
+- **Virtual pet**: hunger, fun, hygiene, affection and sleep computed from real time, with evolution stages.
+- **Phone**: access over the local network with code pairing.
 
-## Honestidade antes de tudo
+## Honesty first
 
-O Nym não pode inventar lembranças nem ações. As regras ficam fixas no código (`app/core/policy.py`), fora de qualquer
-dado editável. Se a resposta diz que ele "já pesquisou" ou que "você me contou" algo sem registro que sustente, o código
-pede uma nova versão ou manda uma correção. O estado interno dele é um *modelo calculado*, nunca apresentado como sentimento.
+Nym must not make up memories or actions. The rules are fixed in code (`app/core/policy.py`), outside any editable data.
+If a reply says it "already searched" or that "you told me" something with no record to back it, the code asks for a new
+version or sends a correction. Its internal state is a *computed model*, never presented as feelings.
 
-## Como rodar (Windows, PowerShell)
+## Running it (Windows, PowerShell)
 
-Requisitos: Python 3.11+ e o Ollama com um modelo instalado (o padrão do projeto é `gemma4:12b-it-qat`).
+Requirements: Python 3.11+ and Ollama with a model installed (the project default is `gemma4:12b-it-qat`).
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-copy .env.example .env          # ajuste NYM_MODEL para o modelo que você tem
-.venv\Scripts\python.exe -m app # abre em http://127.0.0.1:8000
+copy .env.example .env          # set NYM_MODEL to a model you have
+.venv\Scripts\python.exe -m app # opens at http://127.0.0.1:8000
 ```
 
-Testes:
+Tests:
 
 ```powershell
 .venv\Scripts\python.exe -m pytest
 ```
 
-Para os sentidos de vídeo, instale também `requirements-senses.txt` e o ffmpeg (opcionais).
+For the video senses, also install `requirements-senses.txt` and ffmpeg (optional).
 
-## Arquitetura
+## Architecture
 
-- Núcleo só com a biblioteca padrão do Python; dependências de execução: FastAPI e Uvicorn.
-- `app/core/`: chat, identidade, voz, tempo, estado interno, presença, vpet.
+- Core uses only the Python standard library; runtime dependencies: FastAPI and Uvicorn.
+- `app/core/`: chat, identity, voice, time, internal state, presence, virtual pet.
 - `app/memory/`, `app/dreams/`, `app/tasks/`, `app/tools/`, `app/senses/`, `app/creations/`, `app/learning/`, `app/life/`.
-- `frontend/`: HTML, CSS e JavaScript puros, com streaming das respostas.
-- `training/`: scripts opcionais para treinar um LoRA do Nym (fora do app, em ambiente separado).
+- `frontend/`: plain HTML, CSS and JavaScript, with streamed replies.
+- `training/`: optional scripts to train a LoRA for Nym (outside the app, in a separate environment).
 
-Detalhes de cada fase, decisões e verificações manuais: [docs/MANUAL.md](docs/MANUAL.md).
+Details on each phase, design decisions and manual checks: [docs/MANUAL.md](docs/MANUAL.md) (Portuguese).
 
-## Privacidade
+## Privacy
 
-O banco, os logs, as notas e os dados de treino ficam em `data/`, que nunca vai para o Git. Nenhuma chave é necessária
-para rodar; as opcionais (Brave, Tavily) vão no `.env`, que também fica fora do repositório.
+The database, logs, notes and training data live in `data/`, which never goes into Git. No keys are needed to run it;
+the optional ones (Brave, Tavily) go in `.env`, which also stays out of the repository.
