@@ -17,7 +17,7 @@
       <main class="chat">
         <header class="chat-head">
           <button id="toggle-panel" class="who" type="button" aria-controls="panel" aria-expanded="false" title="Ver o Nym agora">
-            <span id="mini-pet" class="mini-pet" aria-hidden="true"></span>
+            <canvas id="face-mini" class="face-visor" aria-hidden="true"></canvas>
             <span class="who-text">
               <b>Nym</b>
               <span id="mood-line" class="sub" aria-live="polite" title="Estado calculado de dados reais; não é sentimento."></span>
@@ -44,6 +44,10 @@
       <div id="backdrop" class="backdrop" hidden></div>
       <aside id="panel" class="panel" aria-label="O que o Nym está fazendo agora">
         <button id="close-panel" class="ghost close-panel" type="button" aria-label="Fechar">✕</button>
+        <section class="card face-card" aria-label="Rosto do Nym">
+          <canvas id="face-big" role="img" aria-label="Olhos do Nym"></canvas>
+          <div class="face-why"><span id="face-label" title="Expressão calculada pelo código ou escolhida por ele; não é prova de sentimento.">…</span><a href="face.html">tela cheia</a></div>
+        </section>
         <section class="card pet-card">
           <div id="pet" role="img" aria-label="Avatar do Nym"></div>
           <div class="pet-info">
@@ -86,6 +90,7 @@
   <script src="shell.js"></script>
   <script src="senses.js"></script>
   <script src="avatar.js"></script>
+  <script src="face.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

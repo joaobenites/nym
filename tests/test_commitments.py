@@ -60,7 +60,7 @@ class ChatCommitmentTests(DbTestCase):
     def test_tag_starts_a_goal_right_away_and_never_shows(self):
         provider = Talker(["Bora! Vou ", "procurar uns editores bons.", "\n[[fa", "zer: pesquisar editores de vídeo gratuitos ", "e anotar os melhores]]"])
         chat, tasks = self.services(provider)
-        events = list(chat.stream_message("pesquisa uns editores de vídeo gratuitos pra mim?"))
+        events = list(chat.stream_message("tem uns editores de vídeo gratuitos bons?"))
         shown = "".join(e["text"] for e in events if e["type"] == "delta")
         self.assertNotIn("[[", shown)
         self.assertNotIn("fazer:", shown)
@@ -70,7 +70,7 @@ class ChatCommitmentTests(DbTestCase):
         goal = tasks.get_goal(done["actions"][0]["goal_id"])
         self.assertEqual((goal["status"], goal["plan_state"], goal["origin"]), ("active", "needs_plan", "nym"))
         self.assertEqual(goal["chat_message_id"], done["assistant_message_id"])
-        self.assertIn("pesquisa uns editores", goal["motivation"])
+        self.assertIn("editores de vídeo", goal["motivation"])
         self.assertEqual(chat.get_history()["messages"][-1]["content"], "Bora! Vou procurar uns editores bons.")
 
     def test_same_commitment_twice_does_not_duplicate(self):

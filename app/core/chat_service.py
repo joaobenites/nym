@@ -27,7 +27,7 @@ from app.core.activity import ActivityGate
 from app.core.identity import IdentityService
 from app.core.state import StateService
 from app.core.timesense import gap_marker, time_block
-from app.core import commitments, followups, pet, rhythm, speaker, tastes
+from app.core import commitments, face as face_mod, followups, pet, rhythm, speaker, tastes
 from app.core import requests as requests_mod
 from app.creations import store as creation_store
 from app.learning import feedback, lessons
@@ -88,6 +88,7 @@ class ChatResult:
     model: str
     memories_used: list[int] = field(default_factory=list)
     actions: list[dict] = field(default_factory=list)   # objetivos que começaram por causa desta resposta
+    face: dict | None = None                             # reação do rosto (Fase 10): {expression, source}
 
 
 class ChatService:
@@ -120,6 +121,7 @@ class ChatService:
         self._auto_goals: list[dict] = []   # objetivos criados pelo CÓDIGO a partir do pedido desta fala (Fase 10)
         self._pending_progress = False      # ele cobrou um pedido que ainda não tem resultado (Fase 10.1)
         self._recent_replies: list[str] = []   # as últimas falas do próprio Nym, para o ritmo (Fase 10.1)
+        self._history_replies: list[str] = []  # todas as falas dele na janela, para não se repetir (Fase 10.2)
 
     @staticmethod
     def _main_conversation(conn) -> str | None:
@@ -165,10 +167,11 @@ class ChatService:
                     {"model": response.model, "context_messages": len(context),
                      "assistant_message_id": assistant_id, "memory_ids": memories_used, "voice": voice},
                 )
+                reaction = self._record_face(conn, raw, text, assistant_id)
             actions = self._act_on_commitments(raw, reply, text, assistant_id)
             self._mark_followups(conn, reply)
             self._mark_lessons(conn, assistant_id)
-            return ChatResult(user_id, assistant_id, reply, response.model, memories_used, actions)
+            return ChatResult(user_id, assistant_id, reply, response.model, memories_used, actions, reaction)
         finally:
             conn.close()
 
@@ -262,6 +265,9 @@ class ChatService:
                 yield {"type": "start", "user_message_id": user_id, "memories_used": used}
                 stats: dict[str, Any] = {}
                 shown, sent_raw = 0, ""
+                # Fase 10.2: em fala de tom (risada, desabafo, despedida, curtíssima) a resposta é segurada, conferida e só então
+                # mostrada: streaming puro não consegue reescrever uma resposta repetida ou em tom de atendente.
+                careful = self._settings.voice_retry and rhythm.needs_care(text)
                 try:
                     stream = self._provider.stream_chat(context)
                     for event in stream:
@@ -271,6 +277,8 @@ class ChatService:
                             stats = event.stats
                             break
                         parts.append(event.text)
+                        if careful:
+                            continue
                         visible = commitments.visible_text("".join(parts))   # a marca [[fazer: ...]] nunca aparece
                         if len(visible) > shown and visible.startswith(sent_raw):
                             piece = visible[shown:]
@@ -293,6 +301,15 @@ class ChatService:
                     finished = True
                     yield {"type": "stopped", "user_message_id": user_id}
                     return
+                if careful and parts:
+                    raw_held = "".join(parts)
+                    if not stopped:
+                        raw_held = self._second_take(context, text, raw_held)
+                        parts = [raw_held]
+                    held = commitments.visible_text(raw_held, final=True)
+                    held = held if self._settings.allow_emoji else strip_emoji(held)
+                    if held:
+                        yield {"type": "delta", "text": held}
                 result = self._save_reply(conn, cid, "".join(parts), context, used, text, stats, started, partial=stopped)
                 finished = True
                 yield {"type": "stopped" if stopped else "done", **result}
@@ -310,6 +327,24 @@ class ChatService:
                         log.exception("Não foi possível salvar a resposta interrompida.")
                 conn.close()
 
+    def _second_take(self, context: list[ChatMessage], user_text: str, raw: str) -> str:
+        """Resposta segurada (ver `careful` em `_stream`): se cair em vício de tom ou de honestidade, pede UMA nova versão e fica
+        com a que tiver menos problemas. Falha do modelo aqui nunca perde a primeira resposta."""
+        first = commitments.visible_text(raw, final=True) or raw.strip()
+        issues = self._issues(user_text, first, context)
+        if not issues:
+            return raw
+        retry_ctx = [ChatMessage("system", context[0].content + "\n\n" + retry_note(issues)), *context[1:]]
+        try:
+            second = self._provider.chat(retry_ctx)
+        except ModelError as exc:
+            log.info("Nova versão da resposta segurada não saiu (%s); fica a primeira.", exc)
+            return raw
+        again = commitments.visible_text(second.content, final=True) or second.content.strip()
+        if again and len(self._issues(user_text, again, context)) < len(issues):
+            return second.content
+        return raw
+
     def _save_reply(self, conn, cid: str, raw: str, context, used: list[int], user_text: str, stats: dict[str, Any],
                     started: float, partial: bool = False) -> dict[str, Any]:
         clean = commitments.visible_text(raw, final=True) or raw.strip()
@@ -323,6 +358,7 @@ class ChatService:
             repo.log_audit(conn, "chat.reply", {"model": self._provider.model, "context_messages": len(context),
                                                 "assistant_message_id": assistant_id, "memory_ids": used, "voice": voice,
                                                 "timing": timing, "partial": partial})
+            reaction = None if partial else self._record_face(conn, raw, user_text, assistant_id)
         log.info("Resposta em %.1fs (%s)", timing["server_s"],
                  ", ".join(f"{k}={v}" for k, v in stats.items() if k in ("load_s", "prompt_eval_s", "eval_s", "tokens_per_s")))
         actions = [] if partial else self._act_on_commitments(raw, reply, user_text, assistant_id)
@@ -330,7 +366,17 @@ class ChatService:
         self._mark_lessons(conn, assistant_id)
         return {"assistant_message_id": assistant_id, "reply": reply, "model": self._provider.model,
                 "memories_used": used, "timing": timing, "partial": partial, "actions": actions,
-                "issues": voice["issues"]}
+                "issues": voice["issues"], "face": reaction}
+
+    def _record_face(self, conn, raw: str, user_text: str, assistant_id: int) -> dict[str, str] | None:
+        """Fase 10: a reação do rosto a esta troca. A escolha do próprio Nym ([[rosto: ...]]) vence; senão o código lê a fala
+        do dono. Fica gravada (face_events) junto da resposta. Chamar dentro da transação que grava a resposta."""
+        reaction = face_mod.react(raw, user_text)
+        if reaction is None:
+            return None
+        expression, source = reaction
+        face_mod.record(conn, expression, source, assistant_id, self._clock())
+        return {"expression": expression, "source": source}
 
     def _correct(self, conn, cid: str, context: list[ChatMessage], result: dict[str, Any], user_text: str) -> dict[str, Any] | None:
         """Streaming não reescreve o que já saiu. Se a resposta afirmou algo sem registro (ação que ele não fez, lembrança
@@ -420,7 +466,8 @@ class ChatService:
     def _issues(self, user_text: str, reply: str, context: list[ChatMessage]) -> list[str]:
         """Vícios da resposta (ver voice.find_issues), com o estado desta fala: pedido pendente cobrado e últimas respostas."""
         return find_issues(user_text, reply, self._evidence(context), self._registry(context),
-                           pending_progress=self._pending_progress, recent_replies=self._recent_replies)
+                           pending_progress=self._pending_progress, recent_replies=self._recent_replies,
+                           history_replies=self._history_replies)
 
     @staticmethod
     def _evidence(context: list[ChatMessage]) -> str:
@@ -573,14 +620,17 @@ class ChatService:
             if requests_mod.asks_progress(current["content"]):
                 floor = (now - timedelta(days=2)).astimezone(timezone.utc).isoformat(timespec="milliseconds")
                 text_status, self._pending_progress = requests_mod.status_block(requests_mod.latest_chat_goal(conn, floor))
+                if not text_status:     # cobrou algo que nunca virou objetivo: a verdade é "não tenho nada rodando"
+                    text_status, self._pending_progress = requests_mod.no_request_block(), True
                 if text_status:
                     memory_block = (memory_block + "\n\n" + text_status).strip()
-            self._recent_replies = [r["content"] for r in kept_rows if r["role"] == "assistant"][-rhythm.QUESTION_STREAK:]
+            self._history_replies = [r["content"] for r in kept_rows if r["role"] == "assistant"]
+            self._recent_replies = self._history_replies[-rhythm.QUESTION_STREAK:]
             tone = rhythm.block(current["content"], self._recent_replies)
             if tone:
                 memory_block = (memory_block + "\n\n" + tone).strip()
         except Exception:  # noqa: BLE001
-            self._recent_replies = []
+            self._recent_replies, self._history_replies = [], []
             log.exception("Falha ao ler o estado do pedido/ritmo; seguindo sem isso.")
         state_block = ""
         if self._state is not None:

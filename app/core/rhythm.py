@@ -69,6 +69,12 @@ def read(text: str) -> Rhythm:
     return Rhythm(size=size, mood=mood, asks_depth=bool(_ASKS_DEPTH.search(wrote)), words=words)
 
 
+def needs_care(text: str) -> bool:
+    """Falas em que o TOM pesa mais que a velocidade (risada, cansaço, despedida): o chat segura a resposta, confere os vícios
+    de tom e só então mostra. Em streaming puro não dá para reescrever o que já saiu. Mensagens comuns continuam em streaming."""
+    return read(text).mood in ("heavy", "laugh", "bye")
+
+
 def ends_with_question(text: str) -> bool:
     return re.sub(r"[\s\"'“”)\]]+$", "", text or "").endswith("?")
 
@@ -85,12 +91,13 @@ def block(text: str, recent_replies: list[str] | None = None) -> str:
     lines: list[str] = []
     if r.mood == "heavy":
         lines.append("Ele parece cansado ou pra baixo. Acolha primeiro, em uma ou duas frases simples, do jeito de amigo: sem piada, "
-                     "sem lista de conselhos, sem menu de opções (\"quer desabafar ou prefere mudar de assunto?\"). Uma pergunta aberta e curta é "
-                     "ok, ou nenhuma: só estar ali também conta.")
+                     "sem lista de conselhos, sem menu de opções (nada de \"quer X ou prefere Y?\", \"quer desabafar ou distrair a cabeça?\"). "
+                     "Uma pergunta aberta e curta (\"o que pesou mais?\") é ok, ou nenhuma: só estar ali também conta.")
     elif r.mood == "bye":
         lines.append("Ele está se despedindo. Responda com uma linha só, no mesmo clima, sem recapitular a conversa e sem pergunta.")
     elif r.mood == "laugh":
-        lines.append("Ele está rindo ou brincando. Entre na brincadeira com uma linha leve; não explique a graça.")
+        lines.append("Ele está rindo ou brincando. Entre na brincadeira com uma linha leve e NOVA (não reaproveite nenhuma frase sua "
+                     "anterior); não explique a graça nem comente a própria piada.")
     elif r.mood == "happy":
         lines.append("Ele parece animado com algo. Comemore junto, curto e específico no que ele contou, antes de qualquer pergunta.")
     elif r.mood == "greeting":

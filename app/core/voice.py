@@ -115,6 +115,8 @@ ISSUE_TEXT = {
                        "gostos, lembranças ou registros",
     "desproporcional": "respondeu com várias frases a uma fala curtíssima dele, fora do ritmo da conversa",
     "pergunta_de_novo": "terminou em pergunta de novo, depois de várias respostas seguidas terminadas em pergunta (soa como entrevista)",
+    "repetida": "repetiu quase palavra por palavra algo que você já tinha dito antes na conversa",
+    "menu_de_opcoes": "respondeu a um desabafo com um menu de opções (\"quer X ou prefere Y?\"), tom de atendente",
     "lembranca_sem_registro": "afirmou que o dono disse ou combinou algo antes, mas isso não aparece em nenhuma lembrança, "
                               "mensagem ou registro que você tem",
 }
@@ -220,8 +222,45 @@ def ungrounded_tastes(reply: str, evidence: str) -> list[str]:
     return found
 
 
+# Repetição (Fase 10.2). Achado da conversa real (22/10): a "kkkkkk" do dono ele respondeu com a MESMA frase que tinha usado horas
+# antes ("Pelo menos eu tentei manter a dignidade da Angewomon..."). Amigo não repete a própria fala: o Gemma copia do histórico.
+REPEAT_JACCARD = 0.6
+REPEAT_SENTENCE_TOKENS = 5
+
+
+def _sentence_keys(text: str) -> set[frozenset[str]]:
+    keys = set()
+    for part in re.split(r"(?<=[.!?])\s+|\n+", text or ""):
+        tokens = token_set(part)
+        if len(tokens) >= REPEAT_SENTENCE_TOKENS:
+            keys.add(frozenset(tokens))
+    return keys
+
+
+def repeats_recent(reply: str, history: Sequence[str]) -> bool:
+    """A resposta copia (inteira ou uma frase longa) uma fala anterior do próprio Nym."""
+    mine = token_set(reply)
+    if len(mine) < 3:
+        return False
+    mine_sentences = _sentence_keys(reply)
+    for old in history:
+        theirs = token_set(old)
+        if len(theirs) < 3:
+            continue
+        if len(mine & theirs) / len(mine | theirs) >= REPEAT_JACCARD:
+            return True
+        if mine_sentences & _sentence_keys(old):
+            return True
+    return False
+
+
+_MENU = re.compile(
+    r"\bquer (?:so |apenas |mais )?[^?.!\n]{3,70}\bou (?:prefere|quer|melhor|a gente)\b|\bprefere [^?.!\n]{3,70}\bou\b")
+
+
 def find_issues(user_text: str, reply: str, evidence: str | None = None, registry: str | None = None,
-                pending_progress: bool = False, recent_replies: Sequence[str] = ()) -> list[str]:
+                pending_progress: bool = False, recent_replies: Sequence[str] = (),
+                history_replies: Sequence[str] = ()) -> list[str]:
     """Vícios de chatbot na resposta. Lista vazia = nada a corrigir.
 
     Com `evidence` (texto do que o Nym realmente tem), também confere lembranças citadas sem registro."""
@@ -251,6 +290,10 @@ def find_issues(user_text: str, reply: str, evidence: str | None = None, registr
         issues.append("desproporcional")
     if rhythm.ends_with_question(reply) and rhythm.question_streak(list(recent_replies)):
         issues.append("pergunta_de_novo")
+    if history_replies and repeats_recent(reply, history_replies):
+        issues.append("repetida")
+    if _MENU.search(wrote) and rhythm.read(user_text).mood == "heavy":
+        issues.append("menu_de_opcoes")
     return issues
 
 
@@ -268,6 +311,10 @@ def retry_note(issues: list[str]) -> str:
             "Responda de novo à última mensagem dele, curto e natural, como amigo, sem esses vícios."
             + (" Se ele questionou uma lembrança: confira nas lembranças listadas; se não estiver lá, diga que não tem esse registro."
                if "reforca_lembranca" in issues else "")
+            + (" Escreva algo NOVO, com outras palavras: não reutilize frases que você já mandou antes."
+               if "repetida" in issues else "")
+            + (" Acolha sem oferecer opções: uma frase simples de quem está junto, sem 'quer X ou prefere Y'."
+               if "menu_de_opcoes" in issues else "")
             + (" Você não fez o trabalho que citou: troque por 'vou ver' ou 'ainda não olhei' e diga que conta o resultado quando "
                "tiver. Não cite vídeo, página ou fato como se fosse resultado."
                if "acao_inventada" in issues else "")

@@ -236,6 +236,7 @@ async function send(text, images = []) {
           bubble.textContent = ev.reply;
           bubble.append(el("span", "meta", (ev.type === "stopped" ? "interrompida · " : "") + timingText(ev.timing, ev.memories_used)));
           addReactions(bubble, ev.assistant_message_id, null);
+          faceReact(ev.face);
           (ev.actions || []).forEach((a) => addMessage("note", `Começou a fazer: ${a.description}. Acompanhe em "Fazendo".`));
         } else if (ev.type === "correction") {
           // Fase 10: ele percebeu que falou sem checar e se corrigiu em seguida (mensagem separada, já salva)
@@ -362,15 +363,50 @@ async function loadDream() {
 }
 
 async function refreshPanel() {
-  for (const fn of [loadGrowth, loadMood, loadTasks, loadDream]) {
+  for (const fn of [loadGrowth, loadMood, loadTasks, loadDream, loadFace]) {
     try { await fn(); } catch { /* painel é auxiliar */ }
   }
   setPetMode(null);
 }
 
 // --- avatar: forma = estágio real, modo = estado real ------------------------------------------------------------
-const pet = { view: window.NymAvatar?.create($("pet")), mini: window.NymAvatar?.create($("mini-pet")), waiting: 0,
-  working: 0, dreaming: false, chat: null, mood: "" };
+const pet = { view: window.NymAvatar?.create($("pet")), mini: $("mini-pet") ? window.NymAvatar?.create($("mini-pet")) : null,
+  waiting: 0, working: 0, dreaming: false, chat: null, mood: "" };
+
+// --- rosto (Fase 10): olhos de robô. Estado = o mesmo do avatar (real); reação = escolha dele ou leitura da sua fala --------
+const face = { views: ["face-mini", "face-big"].map((id) => $(id) && window.NymFace?.create($(id))).filter(Boolean),
+  base: "neutro", reaction: null, source: null };
+const FACE_FROM_MODE = { thinking: "pensando", talking: "falando", dreaming: "sonhando", waiting: "esperando",
+  working: "trabalhando", off: "fora" };
+
+function faceLabel() {
+  const r = face.views[0]?.reaction;
+  const L = window.NymFace?.LABELS || {};
+  const why = { model: "escolha dele", dono: "pela sua mensagem" }[face.source] || "";
+  $("face-label") && ($("face-label").textContent = r ? `${L[r] || r}${why ? " · " + why : ""}` : (L[face.state] || ""));
+}
+
+function setFaceState(mode) {
+  face.state = FACE_FROM_MODE[mode] || face.base;
+  face.views.forEach((v) => v.setState(face.state));
+  faceLabel();
+}
+
+function faceReact(f) {
+  if (!f || !f.expression) return;
+  face.source = f.source;
+  face.views.forEach((v) => v.react(f.expression, 7000));
+  faceLabel();
+  setTimeout(faceLabel, 7100);
+}
+
+async function loadFace() {
+  const f = await api("/api/face");
+  face.base = f.state;
+  if (!state.streaming) setPetMode(null);
+}
+setInterval(() => { if (!document.hidden) loadFace().catch(() => {}); }, 5000);
+els.input?.addEventListener("input", () => face.views.forEach((v) => v.lookAt(0, 0.7, 1400)));   // olha você digitando
 
 /** `chatMode` vem do streaming ("thinking"/"talking"); null = decidir pelo estado do backend. */
 function setPetMode(chatMode) {
@@ -385,6 +421,7 @@ function setPetMode(chatMode) {
     : "idle";
   pet.view.setMode(mode);
   pet.mini?.setMode(mode);
+  setFaceState(mode);
   $("pet-mode").textContent = pet.view.label(mode);
   const doing = { thinking: "pensando…", talking: "escrevendo…", dreaming: "sonhando", working: "trabalhando numa coisa",
     waiting: "esperando você decidir algo", off: "fora do ar" }[mode];
@@ -439,6 +476,7 @@ async function presenceTick(opened) {
     if (data.message) {
       const node = addMessage("assistant", data.message.content, "ele puxou assunto", "initiative");
       addReactions(node, data.message.id, null);
+      faceReact(data.message.face);
       notify(data.message.content);
       refreshPanel();
     }

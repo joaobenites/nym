@@ -386,3 +386,17 @@ body.login { grid-template-columns: minmax(0, 24rem); justify-content: center; }
 .day-list li { margin: .2rem 0; overflow-wrap: anywhere; }
 .diary-page b { text-transform: capitalize; }
 .diary-page p { font-size: .95rem; line-height: 1.6; }
+
+/* --- rosto (Fase 10): olhos de robô ----------------------------------------------------------------------------- */
+:root { --heart: #ff6b9a; }
+.face-visor { display: block; width: 4.6rem; height: 2.3rem; background: #05080c; border-radius: .7rem;
+  border: 1px solid var(--line); box-shadow: inset 0 0 12px rgba(0,0,0,.6); }
+.face-card { display: grid; gap: .45rem; }
+.face-card canvas { width: 100%; height: 8.5rem; background: #05080c; border-radius: 1rem; border: 1px solid var(--line); }
+.face-card .face-why { font-size: .85rem; color: var(--muted, #8aa0b4); display: flex; justify-content: space-between; gap: .5rem; }
+.face-page { background: #000; height: 100dvh; margin: 0; overflow: hidden; }
+.face-full { display: block; width: 100vw; height: 100dvh; }
+.face-line { position: fixed; left: 0; right: 0; bottom: 1.2rem; text-align: center; color: var(--accent); opacity: .7;
+  font-size: .95rem; margin: 0; pointer-events: none; }
+.face-back { position: fixed; top: .8rem; left: 1rem; color: var(--accent); opacity: .45; font-size: .85rem; }
+@media (prefers-reduced-motion: reduce) { .face-full, .face-visor { animation: none; } }

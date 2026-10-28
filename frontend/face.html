@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>Nym · rosto</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="face-page">
+  <canvas id="face" class="face-full" role="img" aria-label="Rosto do Nym"></canvas>
+  <p id="face-line" class="face-line" aria-live="polite"></p>
+  <a class="face-back" href="/">voltar</a>
+  <script src="face.js"></script>
+  <script>
+    // Rosto em tela cheia (Fase 10): bom para um celular ou tablet parado do lado do PC. Pergunta ao Nym a cada segundo
+    // como ele está (GET /api/face): o estado vem do sistema real e a reação, da última conversa.
+    (function () {
+      const face = NymFace.create(document.getElementById("face"));
+      const line = document.getElementById("face-line");
+      let lastReaction = null;
+      async function tick() {
+        try {
+          const res = await fetch("/api/face");
+          if (res.status === 401) { location.href = "/login.html"; return; }
+          const f = await res.json();
+          face.setState(f.state);
+          if (f.reaction && f.reaction.id !== lastReaction) {
+            lastReaction = f.reaction.id;
+            face.react(f.reaction.expression, 6000);
+          }
+          const r = face.reaction;
+          line.textContent = r ? NymFace.LABELS[r] + (f.reaction?.source === "model" ? " · escolha dele" : "")
+                               : NymFace.LABELS[f.state] || "";
+        } catch {
+          face.setState("fora");
+          line.textContent = "fora do ar";
+        }
+      }
+      tick();
+      setInterval(tick, 1000);
+      document.addEventListener("click", () => face.lookAt((Math.random() - .5) * 1.2, -0.2, 1200));
+    })();
+  </script>
+</body>
+</html>

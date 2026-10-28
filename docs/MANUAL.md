@@ -271,6 +271,26 @@ descartada. O texto é escrito na hora pelo próprio Nym, a partir de um motivo 
 - **Resposta mais rápida:** a janela do histórico anda em blocos, então o Ollama reaproveita o começo da conversa
   (antes reprocessava ~3000 tokens a cada mensagem).
 
+### Rosto reativo (Fase 10)
+Olhos de robô, no estilo dos robozinhos de tela OLED (inspiração: RoboEyes e WALL-E), desenhados pelo próprio Nym em
+`frontend/face.js` (desenho próprio, sem copiar código de terceiros). Aparecem no topo do chat, no painel "Agora" e em
+tela cheia em `/face.html`, que é bom para um celular ou tablet parado do lado do PC.
+
+- **Estado** (o código decide, a partir do que está acontecendo de verdade): pensando, falando, sonhando, dormindo,
+  esperando você, com fome, cansado, trabalhando, curioso, à toa ou fora do ar. Quando está à toa, pisca e o olhar passeia.
+  Quando você digita, ele olha para baixo, na direção do que você escreve.
+- **Reação** (por cima do estado, alguns segundos): feliz, risada, surpreso, irritado, triste, curioso, confuso, carinho
+  (olhos de coração), assustado, cansado ou envergonhado. Quem escolhe é o próprio Nym: ele pode terminar a resposta com
+  `[[rosto: surpreso]]`, uma marca que não aparece no chat. O código só aceita palavras dessa lista. Se ele não escolher,
+  o código reage à sua mensagem (risada, carinho, notícia boa, desabafo, xingamento). Embaixo dos olhos aparece de quem foi
+  a escolha ("escolha dele" ou "pela sua mensagem").
+- Tudo fica registrado em `face_events`, e `GET /api/face` devolve o estado e a última reação. A futura telinha com ESP32 e
+  OLED só precisa dessas palavras.
+- É expressão de um bichinho digital, não prova de sentimento. A regra fica em `policy.py` e a nota aparece na tela.
+
+**Verificação manual:** reinicie o Nym. Diga "kkkk" (deve rir), "adivinha o que aconteceu" (surpreso) e "te adoro" (carinho).
+Veja se ele às vezes escolhe a própria reação (aparece "escolha dele") e abra `/face.html` no celular.
+
 ### LoRA do Nym (9.5)
 Treino de um LoRA em cima do Gemma 4 12B, na GPU do dono, com as conversas e o diário reais do Nym. O passo a passo
 está em `training/LEIAME.md`: exportar (`python -m app.training.export`, testado), montar um ambiente de treino

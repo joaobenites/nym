@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from app.core.face import strip_tags as strip_face_tags
 from app.memory.text import normalize
 from app.models.base import ChatMessage
 
@@ -34,8 +35,9 @@ organizar, ler, juntar informações...). Concordar, opinar ou só conversar nã
 
 
 def visible_text(raw: str, final: bool = False) -> str:
-    """O texto que o usuário pode ver: sem as marcas completas e, durante o streaming, sem uma marca pela metade."""
-    out = TAG_RE.sub("", raw)
+    """O texto que o usuário pode ver: sem as marcas completas ([[fazer: ...]] e, desde a Fase 10, [[rosto: ...]]) e,
+    durante o streaming, sem uma marca pela metade."""
+    out = strip_face_tags(TAG_RE.sub("", raw))
     if not final:
         start = out.find("[[")
         if start >= 0:

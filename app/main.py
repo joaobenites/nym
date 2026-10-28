@@ -12,6 +12,7 @@ from app.api import access as access_api
 from app.api import atelier as atelier_api
 from app.api import chat as chat_api
 from app.api import days as days_api
+from app.api import face as face_api
 from app.api import health as health_api
 from app.api import identity as identity_api
 from app.api import memory as memory_api
@@ -157,6 +158,7 @@ def create_app(settings: Settings | None = None, provider: LLMProvider | None = 
     app.include_router(senses_api.router)
     app.include_router(days_api.router)
     app.include_router(pet_api.router)
+    app.include_router(face_api.router)
     mimetypes.add_type("application/manifest+json", ".webmanifest")   # "Adicionar à tela inicial" no celular
     if FRONTEND_DIR.is_dir():
         # Montado por último para não sobrescrever as rotas da API.

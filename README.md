@@ -20,6 +20,7 @@ Everything runs locally (Windows + [Ollama](https://ollama.com)), and the data l
 - **Web and folders**: searches the web with sources and reads, read-only, the folders you authorize.
 - **Senses**: sees images, the camera or the screen (only when you click) and watches YouTube videos.
 - **Atelier**: creates SVG drawings and small HTML toys, always sandboxed.
+- **Robot face**: robot eyes (own drawing, WALL-E style) that show the real state and react to the conversation; Nym picks its own reaction, the code validates it. Full-screen at `/face.html`.
 - **Virtual pet**: hunger, fun, hygiene, affection and sleep computed from real time, with evolution stages.
 - **Phone**: access over the local network with code pairing.
 

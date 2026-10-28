@@ -27,6 +27,7 @@ _HYPOTHETICAL = re.compile(r"\b(se|quando|caso|talvez|queria saber se)\s+(?:\w+\
 _QUESTION_ABOUT_NYM = re.compile(r"\b(voce|vc) (procurou|pesquisou|buscou|achou|encontrou|olhou)\b")
 # Formas que também são o presente do indicativo ("você pesquisa"): só valem perto do começo da frase.
 _AMBIGUOUS = frozenset({"procura", "pesquisa", "busca", "checa", "ache"})
+_SUBJECTS = frozenset({"voce", "vc", "ele", "ela", "eu", "que", "quem", "como", "se", "a", "o", "nym"})
 MIN_TOKENS = 3
 MAX_DESCRIPTION = 220
 
@@ -37,12 +38,19 @@ def explicit_request(text: str) -> str | None:
         return None
     for sentence in re.split(r"(?<=[.!?\n])\s+", text.strip()):
         wrote = normalize(sentence)
-        if _QUESTION_ABOUT_NYM.search(wrote) or sentence.rstrip().endswith("?") and not wrote.startswith(
-                ("pode ", "consegue ", "poderia ", "da pra ", "voce pode ", "vc pode ", "d pra ")):
+        if _QUESTION_ABOUT_NYM.search(wrote):
             continue
+        is_question = sentence.rstrip().endswith("?")
+        polite = wrote.startswith(("pode ", "consegue ", "poderia ", "da pra ", "voce pode ", "vc pode ", "d pra "))
         for m in _ASK.finditer(wrote):
             before = wrote[:m.start()]
-            if m.group(1) in _AMBIGUOUS and len(before.split()) > 3:
+            lead = before.split()
+            # "Pesquisa pra mim qual foi o primeiro vpet?" é ordem mesmo terminando em "?": o verbo abre a frase.
+            if is_question and not polite and len(lead) > 2:
+                continue
+            if lead and lead[-1] in _SUBJECTS:
+                continue   # "você pesquisa isso?", "ele busca" descrevem, não ordenam
+            if m.group(1) in _AMBIGUOUS and len(lead) > 3:
                 continue   # "a forma que você pesquisa..." descreve, não ordena
             if _NEGATED.search(before + " ") or _HYPOTHETICAL.search(before + " "):
                 continue
@@ -111,3 +119,14 @@ def status_block(goal: dict | None) -> tuple[str, bool]:
     return (head + f": {state}. AINDA NÃO TEM RESULTADO. Diga isso do seu jeito, curto (\"ainda não saiu\", \"tá na fila\"), sem "
             "citar fato, vídeo ou página como se fosse o resultado da pesquisa. Se quiser, diga o que você já sabia de cabeça "
             "deixando claro que NÃO é o resultado da busca.", True)
+
+
+def no_request_block() -> str:
+    """Ele cobrou ("e aí, já descobriu?") mas não há NENHUM pedido do chat registrado como objetivo nas últimas 48 h.
+
+    Achado da conversa real (22/10): "Pesquisa pra mim qual foi o primeiro vpet?" não virou objetivo e, na cobrança, o Nym
+    respondeu "Já descobri! O Dogz...": resultado de uma pesquisa que nunca existiu. O contexto agora diz a verdade."""
+    return ("Situação do pedido dele: NÃO existe nenhum pedido seu registrado como objetivo nos últimos dias (nem andando, nem "
+            "concluído). Você não pesquisou nada. Não diga que descobriu, achou ou olhou. Diga, curto e do seu jeito, que não tem "
+            "nada rodando sobre isso e pergunte a que ele se refere, ou ofereça ver agora. Se souber algo de cabeça, diga que é "
+            "de cabeça e não resultado de busca.")

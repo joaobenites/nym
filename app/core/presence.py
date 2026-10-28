@@ -26,7 +26,7 @@ from typing import Any
 from app.config import Settings
 from app.core.activity import ActivityGate
 from app.core.identity import IdentityService
-from app.core import followups, growth, pet, speaker, tastes
+from app.core import commitments, face as face_mod, followups, growth, pet, speaker, tastes
 from app.life import day as day_mod
 from app.core.state import StateService
 from app.core.timesense import time_block
@@ -377,15 +377,16 @@ class PresenceService:
                                     + " | ".join(" ".join(o.split()[:6]) + "..." for o in openers[:3])
                                     + ". Comece de outro jeito, com outras palavras e outro tom.")
                 try:
-                    second = self._clean(self._provider.chat([ChatMessage("system", system), *recent, again]).content)
+                    second_raw = self._provider.chat([ChatMessage("system", system), *recent, again]).content
+                    second = self._clean(second_raw)
                     if second and not repeats_opening(second, openers):
-                        reply = LLMResponse(content=second, model=reply.model)
+                        reply = LLMResponse(content=second_raw, model=reply.model)
                 except ModelError:
                     pass   # fica a primeira: melhor repetir o jeito de abrir do que ficar calado
         except ModelError as exc:
             log.warning("Iniciativa adiada: modelo indisponível (%s)", exc)
             return None
-        text = reply.content.strip().strip('"“”').strip()
+        text = self._clean(reply.content)          # sem marcas escondidas; guarda a reação de rosto escolhida
         if not self._settings.allow_emoji:
             text = strip_emoji(text)
         for prefix in ("Nym:", "Nym -"):
@@ -396,9 +397,10 @@ class PresenceService:
             text = cut[: cut.rfind(".") + 1] if "." in cut else cut
         return text or None
 
-    @staticmethod
-    def _clean(text: str) -> str:
-        return text.strip().strip('"“”').strip()
+    def _clean(self, text: str) -> str:
+        """Sem aspas e sem marcas escondidas. Fase 10: a reação de rosto que ele escolheu fica guardada para o _save."""
+        self._last_face = face_mod.extract(text)
+        return commitments.visible_text(text, final=True).strip().strip('"“”').strip()
 
     def _save(self, kind: str, topic: str, refs: list[int], pending_id: int | None, text: str, last_id: int, cid: str) -> dict[str, Any] | None:
         conn = connect(self._settings.db_path)
@@ -409,6 +411,8 @@ class PresenceService:
                     return None
                 stamp = self._clock().isoformat(timespec="milliseconds")   # mesmo relógio usado para decidir quando falar
                 mid = repo.add_message(conn, cid, "assistant", text, model=self._provider.model, initiative=True, created_at=stamp)
+                if getattr(self, "_last_face", None):   # Fase 10: a cara que ele escolheu ao puxar assunto
+                    face_mod.record(conn, self._last_face, "model", mid, self._clock())
                 if pending_id is not None:
                     conn.execute("UPDATE pending_messages SET status = 'delivered', delivered_at = ? WHERE id = ?", (utcnow(), pending_id))
                     if kind == "followup":
@@ -421,6 +425,7 @@ class PresenceService:
                         conn.execute("UPDATE tastes SET shared_at = ? WHERE id = ?", (utcnow(), refs[0]))
                 log_audit(conn, "presence.spoke", {"kind": kind, "message_id": mid})
             row = conn.execute("SELECT id, role, content, model, created_at, initiative FROM messages WHERE id = ?", (mid,)).fetchone()
-            return {**dict(row), "kind": kind}
+            chosen = getattr(self, "_last_face", None)
+            return {**dict(row), "kind": kind, "face": {"expression": chosen, "source": "model"} if chosen else None}
         finally:
             conn.close()
